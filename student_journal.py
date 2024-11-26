@@ -47,7 +47,7 @@ def find_students(student_id: str = None, student_name: str = None) -> list:
     results = []
     if student_id:
         results.extend([student for student in students if student["id"] == student_id])
-    if student_name:
+    elif student_name:
         results.extend([student for student in students if student["name"].lower() == student_name.lower()])
     return results
 

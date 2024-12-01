@@ -1,7 +1,8 @@
 import PySimpleGUI as sg
 import base64
 from students_journal_module import represent_students, search_student, ask_student_payload_update, update_student, \
-    ask_student_payload_add, add_student, delete_student, calculate_summary
+    ask_student_payload_add, add_student, delete_student, calculate_summary, ask_student_payload_add_marks, \
+    student_add_marks
 
 students = {
     1: {
@@ -67,6 +68,7 @@ def main():
     LIGHT_GRAY_BUTTON_COLOR = f'#212021 on #e0e0e0'
     DARK_GRAY_BUTTON_COLOR = '#e0e0e0 on #212021'
     RED_BUTTON_COLOR = '#FFFFFF on #FF0000'
+    YELLOW_BUTTON_COLOR = '#212021 on #FFFF00'
 
     total_students, average_score = calculate_summary()
 
@@ -84,7 +86,8 @@ def main():
                        [sg.B('retrieve', size=(14,2), button_color=DARK_GRAY_BUTTON_COLOR),
                         sg.B('show', size=(17, 3), button_color=BLUE_BUTTON_COLOR),
                         sg.B('change', size=(14,2), button_color=LIGHT_GRAY_BUTTON_COLOR)],
-                       [sg.B('add', size=(14,2), button_color=GREEN_BUTTON_COLOR),
+                       [sg.B('create', size=(14,2), button_color=GREEN_BUTTON_COLOR),
+                        sg.B('add marks', size=(14, 2), button_color=YELLOW_BUTTON_COLOR),
                         sg.B('remove', size=(14,2), button_color=RED_BUTTON_COLOR)],
                        [sg.T(f'-TOTAL_STUDENTS-: {total_students}',
                              size=(40, 1), key='-TOTAL_STUDENTS-', font=("Helvetica", 12))],
@@ -137,7 +140,34 @@ def main():
                 except ValueError as e:
                     sg.popup("Invalid value for ID", title="Input Error")
 
-        elif event == 'add':
+                total_students, average_score = calculate_summary()
+                window['-TOTAL_STUDENTS-'].update(f'-TOTAL_STUDENTS: {total_students}')
+                window['-AVERAGE_SCORE-'].update(f'-AVERAGE_SCORE-: {average_score}')
+
+        elif event == 'add marks':
+            add_marks_id = sg.popup_get_text('Input Student ID:', title='Student add marks')
+            if add_marks_id is not None:
+                try:
+                    id_ = int(add_marks_id)
+                    student = search_student(id_)
+                    if student is not None:
+                        sg.popup(search_student(id_), title="Students Search", font=("Helvetica", 14, "italic"))
+                        if data := ask_student_payload_add_marks() :
+                            student_add_marks(id_, data)
+                            sg.popup("✅ Student marks is add", title="Student data change")
+                        else:
+                            sg.popup("❌ Student marks is not added", title="Student data change")
+                    else :
+                        sg.popup("Student ID not found", title="Input Error")
+                except ValueError as e:
+                    sg.popup("Invalid value for ID", title="Input Error")
+
+                total_students, average_score = calculate_summary()
+                window['-TOTAL_STUDENTS-'].update(f'-TOTAL_STUDENTS: {total_students}')
+                window['-AVERAGE_SCORE-'].update(f'-AVERAGE_SCORE-: {average_score}')
+
+
+        elif event == 'create':
             data = ask_student_payload_add()
             if data is None:
                 return None
@@ -169,6 +199,10 @@ def main():
                     sg.popup("❌ Student is not deleted", title="Student data delete")
             except ValueError :
                 sg.popup("Invalid value for ID", title="Input Error")
+
+            total_students, average_score = calculate_summary()
+            window['-TOTAL_STUDENTS-'].update(f'-TOTAL_STUDENTS: {total_students}')
+            window['-AVERAGE_SCORE-'].update(f'-AVERAGE_SCORE-: {average_score}')
 
 
     window.close()

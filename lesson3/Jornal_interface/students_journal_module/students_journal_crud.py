@@ -36,3 +36,16 @@ def delete_student(id_: int):
         print(f"Student with id '{id_}' is deleted")
     else:
         print(f"There is no student '{id_}' in the storage")
+
+def student_add_marks(id_: int, payload: dict) -> dict:
+    """Add marks to student"""
+    global students
+    try:
+        marks_add = students[id_].copy()
+    except KeyError:
+        raise ValueError(f"Student with id {id_} does not exist")
+
+    else:
+        marks_add["marks"].extend(payload["marks"])
+        students[id_] = marks_add
+        return marks_add

@@ -1,3 +1,5 @@
+import  PySimpleGUI
+
 """
 Student:
     name: str
@@ -38,7 +40,7 @@ def represent_students():
 # ==================================================
 # CRUD (Create Read Update Delete)
 # ==================================================
-def add_student(student: dict) -> dict | None:
+def student_create(student: dict) -> dict | None:
     """Adding Students"""
     global LAST_ID_CONTEXT
 
@@ -81,6 +83,20 @@ def update_student(id_: int, payload: dict) -> dict:
         updated_student["marks"] = payload["marks"]
     students[id_] = updated_student
     return updated_student
+
+def student_add_marks(id_: int, payload: dict) -> dict:
+    """Add marks to student"""
+    global students
+    try:
+        marks_add = students[id_].copy()
+    except KeyError:
+        raise ValueError(f"Student with id {id_} does not exist")
+
+    else:
+        marks_add["marks"].extend(payload["marks"])
+        students[id_] = marks_add
+        return marks_add
+
 
 def student_details(student: dict) -> None:
     """Showing Students Details"""
@@ -139,7 +155,7 @@ def parse(data: str) -> tuple[str or None, list[int] or None]:
 
 
 
-def ask_student_payload_add():
+def ask_student_payload_create():
     """
     Input template:
         'John Doe;4,5,4,5,4,5'
@@ -181,6 +197,24 @@ def ask_student_payload_update():
         name, marks = payload
 
     return {"name": name, "marks": marks}
+
+def ask_student_payload_add_marks():
+    """
+    Input template:
+        4,5,4,5,4,5
+
+    Expected:
+
+        4,5,4,5,4,5:    list[int]
+    """
+
+    prompt = "Enter student's marks for add, using next template:4,5,4,5,4,5\n"
+
+    if not (payload := input(prompt)):
+        return None
+    else:
+        marks = [int(i) for i in payload.split(",")]
+        return {"marks": marks}
 
 
 
@@ -227,15 +261,32 @@ def handle_management_command(command: str):
                 else:
                     print(f"❌ Can not change user with data {data}")
 
-    elif command == "add":
-        data = ask_student_payload_add()
+    elif command == "create":
+        data = ask_student_payload_create()
         if data is None:
             return None
         else:
-            if not (student := add_student(data)):
+            if not (student := student_create(data)):
                 print(f"❌ Can't create user with data: {data}")
             else:
                 print(f"✅ New student '{student['name']}' is created")
+
+    elif command == "add marks":
+        add_marks_id = input("Enter student's id, you want add marks: ")
+
+        try:
+            id_ = int(add_marks_id)
+        except ValueError as error:
+            raise Exception(f"ID '{add_marks_id}' is not correct value") from error
+        else:
+            if data := ask_student_payload_add_marks():
+                student_add_marks(id_, data)
+                print(f"✅ Student marks is added")
+                if student := search_student(id_):
+                    student_details(student)
+                else:
+                    print(f"❌ Can not add marks for user  {add_marks_id}")
+
     else:
         raise SystemExit(f"Unrecognized command: '{command}'")
 
@@ -244,7 +295,7 @@ def handle_user_input():
     """This is an application entrypoint."""
 
     SYSTEM_COMMANDS = ("quit", "help")
-    MANAGEMENT_COMMANDS = ("show", "add", "retrieve", "remove", "change")
+    MANAGEMENT_COMMANDS = ("show", "create", "retrieve", "remove", "change","add marks")
     AVAILABLE_COMMANDS = SYSTEM_COMMANDS + MANAGEMENT_COMMANDS
 
     help_message = (

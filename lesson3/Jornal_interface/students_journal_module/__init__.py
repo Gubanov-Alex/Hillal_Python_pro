@@ -85,6 +85,24 @@ def ask_student_payload_update():
 
     return {"name": name, "marks": marks}
 
+def ask_student_payload_add_marks():
+    """
+    Input template:
+        4,5,4,5,4,5
+
+    Expected:
+
+        4,5,4,5,4,5:    list[int]
+    """
+
+    prompt = "Enter student's marks for add, using next template:4,5,4,5,4,5\n"
+
+    if not (payload := sg.popup_get_text(prompt)):
+        return None
+    else:
+        marks = [int(i) for i in payload.split(",")]
+        return {"marks": marks}
+
 def parse(data: str) -> tuple[str or None, list[int] or None]:
     """Return student name and marks.
 
@@ -169,6 +187,19 @@ def delete_student(id_: int):
         print(f"Student with id '{id_}' is deleted")
     else:
         print(f"There is no student '{id_}' in the storage")
+
+def student_add_marks(id_: int, payload: dict) -> dict:
+    """Add marks to student"""
+    global students
+    try:
+        marks_add = students[id_].copy()
+    except KeyError:
+        raise ValueError(f"Student with id {id_} does not exist")
+
+    else:
+        marks_add["marks"].extend(payload["marks"])
+        students[id_] = marks_add
+        return marks_add
 
 def student_details(student: dict) -> None:
     """Showing Students Details"""

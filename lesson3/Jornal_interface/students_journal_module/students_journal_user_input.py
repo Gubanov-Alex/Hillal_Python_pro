@@ -97,3 +97,21 @@ def parse(data: str) -> tuple[str or None, list[int] or None]:
 
     else:
         sg.popup("No info added, please try again", title="Input Error")
+
+def ask_student_payload_add_marks():
+    """
+    Input template:
+        4,5,4,5,4,5
+
+    Expected:
+
+        4,5,4,5,4,5:    list[int]
+    """
+
+    prompt = "Enter student's marks for add, using next template:4,5,4,5,4,5\n"
+
+    if not (payload := sg.popup_get_text(prompt)):
+        return None
+    else:
+        marks = [int(i) for i in payload.split(",")]
+        return {"marks": marks}

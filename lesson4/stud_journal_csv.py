@@ -80,7 +80,6 @@ def student_create(student: dict) -> dict | None:
     else:
         new_id = max_id + 1
         storage.students[str(new_id)] = student
-        storage.students[str(new_id)] = student
 
     storage.flush()
     return student

@@ -1,8 +1,6 @@
 import csv
 from pathlib import Path
 
-
-
 """
 Student:
     name: str
@@ -18,7 +16,7 @@ from curses.ascii import isalpha
 # ==================================================
 # Simulated storage
 # ==================================================
-files_dir = Path(__name__).absolute().parent / "files1"
+files_dir = Path(__name__).absolute().parent / "files"
 storage_file = "students.csv"
 
 

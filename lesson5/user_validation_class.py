@@ -73,7 +73,15 @@ class AuthorizationUser:
 
 
 class AuthorizationSystem:
-    def __init__(self, session_timeout=10):
+    """
+    The AuthorizationSystem class is responsible for managing an interactive user authorization system.
+    It validates user identities, authorizes actions for authenticated users, and manages user operations
+    within an interactive loop.
+    Attributes:
+        _init__(self, session_timeout=5) Initializes the AuthorizationSystem with a default session timeout.
+        Internally, it creates an instance of AuthorizationUser for managing user authorization.
+    """
+    def __init__(self, session_timeout=5):
         self.manager = AuthorizationUser(session_timeout=session_timeout)
 
     def run(self):
@@ -136,5 +144,5 @@ class AuthorizationSystem:
 
 
 if __name__ == "__main__":
-    AuthorizationSystem(session_timeout=10).run()
+    AuthorizationSystem(session_timeout=5).run()
 

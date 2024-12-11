@@ -17,7 +17,7 @@ def auth_user_input(func):
         If the user is not in the registered users' list or provides an incorrect password, they are denied access.
 
         Parameters:
-            f (function): The function to be executed after successful authentication.
+            func (function): The function to be executed after successful authentication.
 
         Returns:
             function: The wrapped version of the given function with authentication checks.

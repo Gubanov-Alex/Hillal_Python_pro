@@ -11,7 +11,6 @@ GLOBAL_CONFIG = {
     "max_retries": 3
 }
 
-errors = []
 
 class Configuration:
     def __init__(self, updates, validator=None):

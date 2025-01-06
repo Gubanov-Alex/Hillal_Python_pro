@@ -1,42 +1,42 @@
-import PySimpleGUI as sg
+from itertools import count
 
-students = {
-    1: {
-        "name": "John Doe",
-        "marks": [4, 3, 5, 2, 4, 1, 5],
-        "info": "John is 21 y.o. Hobbies: music",
-    },
-    2:{
-        "name": "Jane Smith",
-        "marks": [2, 3, 5, 4, 3, 5, 2],
-        "info": "Jane is 23 y.o. Hobbies: sports",
-    },
-    3:{
-        "name": "Alice Johnson",
-        "marks": [5, 4, 3, 2, 5, 4, 5],
-        "info": "Alice is 20 y.o. Hobbies: reading",
-    },
-    4:{
-        "name": "Robert Brown",
-        "marks": [3, 3, 4, 2, 5, 4, 3],
-        "info": "Robert is 22 y.o. Hobbies: traveling",
-    },
-    5:{
-        "name": "Emily Davis",
-        "marks": [5, 1, 5, 4, 3, 2, 4],
-        "info": "Emily is 19 y.o. Hobbies: gaming",
-    },
-}
-LAST_ID_CONTEXT = 5
+import PySimpleGUI as sg
+import json
+from pathlib import Path
+
+files_dir = Path(__name__).absolute().parent / "files1"
+storage_file = "students.json"
+
+class StudentsStorage:
+    def __init__(self) -> None:
+        self.students = self.read_json(storage_file)
+
+    @staticmethod
+    def read_json(filename: str) -> dict:
+        with open(files_dir / filename) as file:
+            return json.load(file)
+
+    @staticmethod
+    def write_json(filename: str, data: dict) -> None:
+        with open(files_dir / filename, mode="w") as file:
+            return json.dump(data, file)
+
+    def flush(self) -> None:
+        self.write_json(storage_file, self.students)
 
 
 
 def represent_students():
     """Showing Students"""
     result = []
-    for id_, student in students.items():
-            result.append(f"[{id_}] {student['name']}, marks: {student['marks']}")
-    return "\n".join(result)
+
+    for id_, student in StudentsStorage().students.items():
+        name = student.get('name', 'Unknown Name')
+        marks = student.get('marks', 'Unknown Marks')
+        result.append(f"ID: {id_}, Name: {name}, Marks: {marks}\n")
+
+    return ''.join(result)
+
 
 def ask_student_payload_add():
     """
@@ -151,54 +151,70 @@ def parse(data: str) -> tuple[str or None, list[int] or None]:
 
 def search_student(id_: int) -> dict | None:
     """Searching Students by ID"""
-    return students.get(id_)
+    storage = StudentsStorage()
+    return storage.students.get(str(id_))
+
 
 def update_student(id_: int, payload: dict) -> dict or None:
     """Updating Students by ID"""
-    global students
+    storage = StudentsStorage()
 
-    updated_student = students[id_].copy()
+    try:
+        updated_student = storage.students[str(id_)].copy()
+    except KeyError:
+        raise ValueError(f"Student with id {id_} does not exist")
 
     if payload["name"] is not None:
         updated_student["name"] = payload["name"]
     if payload["marks"] is not None:
         updated_student["marks"] = payload["marks"]
-    students[id_] = updated_student
+    storage.students[str(id_)] = updated_student
+    storage.flush()
     return updated_student
 
 def add_student(student: dict) -> dict | None:
     """Adding Students"""
-    global LAST_ID_CONTEXT
+    storage = StudentsStorage()
+    if storage.students:
+        max_id = max(map(int, storage.students.keys()))
+    else:
+        max_id = 0
 
     if len(student) != 2:
         return None
     elif not student.get("name") or not student.get("marks"):
         return None
     else:
-        LAST_ID_CONTEXT += 1
-        students[LAST_ID_CONTEXT] = student
+        new_id = max_id + 1
+        storage.students[str(new_id)] = student
 
+    storage.flush()
     return student
 
 def delete_student(id_: int):
     """Deleting Students by ID"""
+    storage = StudentsStorage()
+
     if search_student(id_):
-        del students[id_]
+        del storage.students[str(id_)]
+        storage.flush()
         print(f"Student with id '{id_}' is deleted")
     else:
         print(f"There is no student '{id_}' in the storage")
 
 def student_add_marks(id_: int, payload: dict) -> dict:
     """Add marks to student"""
-    global students
+    storage = StudentsStorage()
+
     try:
-        marks_add = students[id_].copy()
+        marks_add = storage.students[str(id_)].copy()
     except KeyError:
         raise ValueError(f"Student with id {id_} does not exist")
 
     else:
         marks_add["marks"].extend(payload["marks"])
-        students[id_] = marks_add
+        storage.students[str(id_)] = marks_add
+        storage.flush()
         return marks_add
 
 def student_details(student: dict) -> None:
@@ -210,8 +226,15 @@ def student_details(student: dict) -> None:
 
 def calculate_summary():
     """Calculate total students and average score."""
-    total_students = len(students)
-    total_marks = sum(sum(student["marks"]) for student in students.values())
-    total_entries = sum(len(student["marks"]) for student in students.values())
-    average_score = total_marks / total_entries if total_entries else 0
-    return total_students, round(average_score, 2)
+    storage = StudentsStorage()
+    total_students = len(storage.students)
+    total_marks = 0
+    total_mark_entries = 0
+    for student in storage.students.values():
+        total_marks += sum(student.get('marks', []))
+        total_mark_entries += len(student.get('marks', []))
+
+    average_marks = round(float(total_marks) / total_mark_entries, 2)
+
+    return total_students, average_marks
+

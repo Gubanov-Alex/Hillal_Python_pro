@@ -1,4 +1,5 @@
-import  PySimpleGUI
+import csv
+from pathlib import Path
 
 """
 Student:
@@ -15,25 +16,47 @@ from curses.ascii import isalpha
 # ==================================================
 # Simulated storage
 # ==================================================
-students = {
-    1: {
-        "name": "John Doe",
-        "marks": [4, 5, 1, 4, 5, 2, 5],
-        "info": "John is 22 y.o. Hobbies: music",
-    },
-    2: {
-        "name": "Marry Black",
-        "marks": [4, 1, 3, 4, 5, 1, 2, 2],
-        "info": "John is 23 y.o. Hobbies: football",
-    },
-}
+files_dir = Path(__name__).absolute().parent / "files"
+storage_file = "students.csv"
 
-LAST_ID_CONTEXT = 2
+
+class StudentsStorage:
+    def __init__(self) -> None:
+        self.students = self.read_csv(storage_file)
+
+    @staticmethod
+    def read_csv(filename: str) -> dict:
+        students = {}
+        with open(files_dir / filename, newline='') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                id_ = row['id']
+                students[id_] = {
+                    "name": row['name'],
+                    "marks": [int(mark) for mark in row['marks'].split(",")] if row['marks'] else []
+                }
+        return students
+
+    @staticmethod
+    def write_csv(filename: str, data: dict) -> None:
+        with open(files_dir / filename, mode="w", newline='') as csvfile:
+            fieldnames = ['id', 'name', 'marks']
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+            writer.writeheader()
+            for id_, student in data.items():
+                writer.writerow({
+                    'id': id_,
+                    'name': student['name'],
+                    'marks': ','.join(map(str, student['marks']))
+                })
+
+    def flush(self) -> None:
+        self.write_csv(storage_file, self.students)
 
 
 def represent_students():
-    """Showing Students"""
-    for id_, student in students.items():
+    for id_, student in StudentsStorage().students.items():
         print(f"[{id_}] {student['name']}, marks: {student['marks']}")
 
 
@@ -42,28 +65,37 @@ def represent_students():
 # ==================================================
 def student_create(student: dict) -> dict | None:
     """Adding Students"""
-    global LAST_ID_CONTEXT
+    storage = StudentsStorage()
+    if storage.students:
+        max_id = max(map(int, storage.students.keys()))
+    else:
+        max_id = 0
 
     if len(student) != 2:
         return None
     elif not student.get("name") or not student.get("marks"):
         return None
     else:
-        LAST_ID_CONTEXT += 1
-        students[LAST_ID_CONTEXT] = student
+        new_id = max_id + 1
+        storage.students[str(new_id)] = student
 
+    storage.flush()
     return student
 
 
 def search_student(id_: int) -> dict | None:
     """Searching Students by ID"""
-    return students.get(id_)
+    storage = StudentsStorage()
+    return storage.students.get(str(id_))
 
 
 def delete_student(id_: int):
     """Deleting Students by ID"""
+    storage = StudentsStorage()
+
     if search_student(id_):
-        del students[id_]
+        del storage.students[str(id_)]
+        storage.flush()
         print(f"Student with id '{id_}' is deleted")
     else:
         print(f"There is no student '{id_}' in the storage")
@@ -71,9 +103,10 @@ def delete_student(id_: int):
 
 def update_student(id_: int, payload: dict) -> dict:
     """Updating Students by ID"""
-    global students
+    storage = StudentsStorage()
+
     try:
-        updated_student = students[id_].copy()
+        updated_student = storage.students[str(id_)].copy()
     except KeyError:
         raise ValueError(f"Student with id {id_} does not exist")
 
@@ -81,20 +114,23 @@ def update_student(id_: int, payload: dict) -> dict:
         updated_student["name"] = payload["name"]
     if payload["marks"] is not None:
         updated_student["marks"] = payload["marks"]
-    students[id_] = updated_student
+    storage.students[str(id_)] = updated_student
+    storage.flush()
     return updated_student
 
 def student_add_marks(id_: int, payload: dict) -> dict:
     """Add marks to student"""
-    global students
+    storage = StudentsStorage()
+
     try:
-        marks_add = students[id_].copy()
+        marks_add = storage.students[str(id_)].copy()
     except KeyError:
         raise ValueError(f"Student with id {id_} does not exist")
 
     else:
         marks_add["marks"].extend(payload["marks"])
-        students[id_] = marks_add
+        storage.students[str(id_)] = marks_add
+        storage.flush()
         return marks_add
 
 

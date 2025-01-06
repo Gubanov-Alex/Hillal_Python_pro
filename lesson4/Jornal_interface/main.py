@@ -1,56 +1,59 @@
 import PySimpleGUI as sg
 import base64
+import json
+from pathlib import Path
 from students_journal_module import represent_students, search_student, ask_student_payload_update, update_student, \
     ask_student_payload_add, add_student, delete_student, calculate_summary, ask_student_payload_add_marks, \
     student_add_marks
 
-students = {
-    1: {
-        "name": "John Doe",
-        "marks": [4, 3, 5, 2, 4, 1, 5],
-        "info": "John is 21 y.o. Hobbies: music",
-    },
-    2:{
-        "name": "Jane Smith",
-        "marks": [2, 3, 5, 4, 3, 5, 2],
-        "info": "Jane is 23 y.o. Hobbies: sports",
-    },
-    3:{
-        "name": "Alice Johnson",
-        "marks": [5, 4, 3, 2, 5, 4, 5],
-        "info": "Alice is 20 y.o. Hobbies: reading",
-    },
-    4:{
-        "name": "Robert Brown",
-        "marks": [3, 3, 4, 2, 5, 4, 3],
-        "info": "Robert is 22 y.o. Hobbies: traveling",
-    },
-    5:{
-        "name": "Emily Davis",
-        "marks": [5, 1, 5, 4, 3, 2, 4],
-        "info": "Emily is 19 y.o. Hobbies: gaming",
-    },
-}
+
 
 SYSTEM_COMMANDS = ("quit", "help")
-MANAGEMENT_COMMANDS = ("show", "add", "retrieve", "remove", "change")
+MANAGEMENT_COMMANDS = ("show", "create", "retrieve", "remove", "change", "add marks")
 AVAILABLE_COMMANDS = SYSTEM_COMMANDS + MANAGEMENT_COMMANDS
 
 help_message = """Here are details of the available commands:
 - quit: finish the application
 - help: show this help message
 - show: journal entries list
-- add: add student
+- create: add student
 - retrieve: find student 
 - remove: delete student data
 - change: update student data
+- add marks: add marks to student data
 """
 
 # ==================================================
 # Simulated storage
 # ==================================================
 
-LAST_ID_CONTEXT = 5
+files_dir = Path(__name__).absolute().parent / "files1"
+storage_file = "students.json"
+
+
+class StudentsStorage:
+    def __init__(self) -> None:
+        self.students = self.read_json(storage_file)
+
+    def __len__(self):
+        return len(self.students)
+
+    @staticmethod
+    def read_json(filename: str) -> dict:
+        with open(files_dir / filename) as file:
+            return json.load(file)
+
+    @staticmethod
+    def write_json(filename: str, data: dict) -> None:
+        with open(files_dir / filename, mode="w") as file:
+            return json.dump(data, file)
+
+    def flush(self) -> None:
+        self.write_json(storage_file, self.students)
+
+
+
+
 
 with open("journal_demo.png", "rb") as image_file:
     PSG_GRAPHIC = base64.b64encode(image_file.read())
@@ -70,7 +73,7 @@ def main():
     RED_BUTTON_COLOR = '#FFFFFF on #FF0000'
     YELLOW_BUTTON_COLOR = '#212021 on #FFFF00'
 
-    total_students, average_score = calculate_summary()
+    total_students, average_marks = calculate_summary()
 
     layout = [[sg.Col([[sg.T("Welcome to Students Journal Application.\n",font=("Helvetica", 22, "italic"),
                              text_color="blue",justification='center')],
@@ -91,7 +94,7 @@ def main():
                         sg.B('remove', size=(14,2), button_color=RED_BUTTON_COLOR)],
                        [sg.T(f'-TOTAL_STUDENTS-: {total_students}',
                              size=(40, 1), key='-TOTAL_STUDENTS-', font=("Helvetica", 12))],
-                       [sg.T(f'-AVERAGE_SCORE-: {average_score}',
+                       [sg.T(f'-AVERAGE_SCORE-: {average_marks}',
                              size=(40, 1), key='-AVERAGE_SCORE-', font=("Helvetica", 12))],
                        [sg.T('Hillal Pyton_pro(30.11.2024)')]], element_justification='c', k='-TOP COL-')]]
 
@@ -139,10 +142,10 @@ def main():
                         sg.popup("Student ID not found", title="Input Error")
                 except ValueError as e:
                     sg.popup("Invalid value for ID", title="Input Error")
-
-                total_students, average_score = calculate_summary()
+                #
+                total_students, average_marks = calculate_summary()
                 window['-TOTAL_STUDENTS-'].update(f'-TOTAL_STUDENTS: {total_students}')
-                window['-AVERAGE_SCORE-'].update(f'-AVERAGE_SCORE-: {average_score}')
+                window['-AVERAGE_SCORE-'].update(f'-AVERAGE_SCORE-: {average_marks}')
 
         elif event == 'add marks':
             add_marks_id = sg.popup_get_text('Input Student ID:', title='Student add marks')
@@ -154,17 +157,17 @@ def main():
                         sg.popup(search_student(id_), title="Students Search", font=("Helvetica", 14, "italic"))
                         if data := ask_student_payload_add_marks() :
                             student_add_marks(id_, data)
-                            sg.popup("✅ Student marks is add", title="Student data change")
+                            sg.popup("✅ Student marks is add", title='Student add marks')
                         else:
-                            sg.popup("❌ Student marks is not added", title="Student data change")
+                            sg.popup("❌ Student marks is not added", title='Student add marks')
                     else :
                         sg.popup("Student ID not found", title="Input Error")
                 except ValueError as e:
-                    sg.popup("Invalid value for ID", title="Input Error")
+                    sg.popup("Invalid value", title="Input Error")
 
-                total_students, average_score = calculate_summary()
+                total_students, average_marks = calculate_summary()
                 window['-TOTAL_STUDENTS-'].update(f'-TOTAL_STUDENTS: {total_students}')
-                window['-AVERAGE_SCORE-'].update(f'-AVERAGE_SCORE-: {average_score}')
+                window['-AVERAGE_SCORE-'].update(f'-AVERAGE_SCORE-: {average_marks}')
 
 
         elif event == 'create':
@@ -177,9 +180,9 @@ def main():
                 else:
                     sg.popup(f"✅ New student '{student['name']}' is created", title="Student added")
 
-                total_students, average_score = calculate_summary()
+                total_students, average_marks = calculate_summary()
                 window['-TOTAL_STUDENTS-'].update(f'-TOTAL_STUDENTS: {total_students}')
-                window['-AVERAGE_SCORE-'].update(f'-AVERAGE_SCORE-: {average_score}')
+                window['-AVERAGE_SCORE-'].update(f'-AVERAGE_SCORE-: {average_marks}')
 
         elif event == 'remove':
 
@@ -191,18 +194,18 @@ def main():
                     delete_student(id_)
                     sg.popup("✅ Student is deleted", title="Student data delete")
 
-                    total_students, average_score = calculate_summary()
+                    total_students, average_marks = calculate_summary()
                     window['-TOTAL_STUDENTS-'].update(f'-TOTAL_STUDENTS: {total_students}')
-                    window['-AVERAGE_SCORE-'].update(f'-AVERAGE_SCORE: {average_score}')
+                    window['-AVERAGE_SCORE-'].update(f'-AVERAGE_SCORE: {average_marks}')
                 else:
                     sg.popup("Student ID not found", title="Input Error")
                     sg.popup("❌ Student is not deleted", title="Student data delete")
             except ValueError :
                 sg.popup("Invalid value for ID", title="Input Error")
 
-            total_students, average_score = calculate_summary()
+            total_students, average_marks = calculate_summary()
             window['-TOTAL_STUDENTS-'].update(f'-TOTAL_STUDENTS: {total_students}')
-            window['-AVERAGE_SCORE-'].update(f'-AVERAGE_SCORE-: {average_score}')
+            window['-AVERAGE_SCORE-'].update(f'-AVERAGE_SCORE-: {average_marks}')
 
 
     window.close()

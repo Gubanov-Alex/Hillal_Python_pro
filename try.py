@@ -6,6 +6,7 @@ class B(A):
     pass
 
 class C(A):
+    def __new__(cls, *args, **kwargs):
     def print_smile(self):
         print(":(")
 
@@ -27,4 +28,6 @@ print(C.mro())
 print(B.mro())
 print(A.mro())
 # print(E.mro())
+import time
+import asyncio
 

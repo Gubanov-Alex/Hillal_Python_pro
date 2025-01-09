@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <title>Article ideas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
+    </script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+            integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous">
+    </script>
+</head>
+<body>
+<style>
+    body {
+        background-color: #070707;
+        color: #ffffff;
+    }
+</style>
+    <header class="header">
+    <style>
+    .header h1 {
+        text-align: center;
+        color: red;
+        font-weight: 800;
+    }
+    </style>
+
+    <title>Button Design</title>
+        <style>
+            body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: start;
+            height: 100vh;
+            margin: 5vh;
+
+        }
+            #fetch-rate {
+            font-size: 2em;
+            padding: 20px 40px;
+        }
+
+            #fetch-rate_info {
+            font-size: 2em;
+            background-color: #ff0026;
+            color: #070707;
+            padding: 10px;
+            border-radius: 25px;        }
+
+            #fetch-rate + #fetch-rate_info {
+            margin-top: 5cm;
+            margin: 3cm;
+
+        }
+    </style>
+    <h1>***** Super Article ideas *****</h1>
+    <button id="fetch-rate" class="btn btn-primary active">FETCH EXCHANGE</button>
+    <span id="fetch-rate_info">Market is not available</span>
+</header>
+
+<style>
+.divider {
+            width: 100%;
+            height: 10px;
+            margin: 20px 0;
+            background: repeating-linear-gradient(
+                45deg,
+                red,
+                red 10px,
+                white 10px,
+                white 20px
+            );}
+</style>
+
+<div class="divider"></div>
+
+<div id="game-container" style="display: none; text-align: center; margin-top: 20px;">
+    <h2>Mini Game: Snake</h2>
+    <p>Score: <span id="score">0</span></p>
+    <canvas id="gameCanvas" width="400" height="400" style="border:1px solid white; background-color: black;"></canvas>
+</div>
+
+<script ID="snake-script" type="text/javascript" charset="utf-8">
+    document.addEventListener('DOMContentLoaded', () => {
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const submitButton = document.getElementById('submit');
+        const gameContainer = document.getElementById('game-container');
+        let intervalId;
+        let snake = [];
+        let food = {};
+        let direction = "RIGHT";
+        let score = 0;
+
+
+        const startGame = () => {
+            score = 0;
+            document.getElementById("score").textContent = score;
+            snake = [{x: 9, y: 9}];
+            food = {x: Math.floor(Math.random() * 20), y: Math.floor(Math.random() * 20)};
+            direction = "RIGHT";
+
+            if (intervalId) clearInterval(intervalId);
+            gameContainer.style.display = 'block';
+            intervalId = setInterval(gameLoop, 150);
+        };
+
+
+        const endGame = () => {
+            gameContainer.style.display = 'none';
+            if (intervalId) clearInterval(intervalId);
+        };
+
+
+        document.addEventListener("keydown", event => {
+            if (event.key === "ArrowUp" && direction !== "DOWN") direction = "UP";
+            else if (event.key === "ArrowDown" && direction !== "UP") direction = "DOWN";
+            else if (event.key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
+            else if (event.key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
+        });
+
+
+        const drawBox = (x, y, color) => {
+            ctx.fillStyle = color;
+            ctx.fillRect(x * 20, y * 20, 20, 20);
+            ctx.strokeStyle = "white";
+            ctx.strokeRect(x * 20, y * 20, 20, 20);
+        };
+
+
+        const gameLoop = () => {
+            const head = {...snake[0]};
+
+
+            if (direction === "UP") head.y -= 1;
+            else if (direction === "DOWN") head.y += 1;
+            else if (direction === "LEFT") head.x -= 1;
+            else if (direction === "RIGHT") head.x += 1;
+
+
+            if (
+                head.x < 0 || head.x >= 20 || head.y < 0 || head.y >= 20 ||
+                snake.some(segment => segment.x === head.x && segment.y === head.y)
+            ) {
+                alert("Game Over! Your score: " + score);
+                endGame();
+                return;
+            }
+
+            snake.unshift(head);
+
+
+            if (head.x === food.x && head.y === food.y) {
+                score++;
+                document.getElementById("score").textContent = score;
+                food = {x: Math.floor(Math.random() * 20), y: Math.floor(Math.random() * 20)};
+            } else {
+                snake.pop();
+            }
+
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            snake.forEach(segment => drawBox(segment.x, segment.y, "lime"));
+            drawBox(food.x, food.y, "red");
+        };
+
+
+        submitButton.addEventListener('click', () => {
+            startGame();
+        });
+
+
+        $(document).ajaxComplete(() => {
+            endGame();
+        });
+    });
+</script>
+
+
+<style>
+        .offer {
+        #article-input-form {
+        display: flex;
+        align-items: center;
+        gap: 250px;
+}}
+
+        #article-topic {
+        flex-grow: 3;
+   }
+</style>
+<style>
+        #market-rate {
+            display: none;
+            font-size: 2em;
+            background-color: #ff0026;
+            color: #070707;
+            padding: 10px;
+            border-radius: 25px;
+        }
+    </style>
+
+    <br />
+    <br />
+
+
+    <section class="offer">
+    <form id="article-input-form" class="form-inline">
+    <input type="text" id="article-topic" class="form-control" placeholder="Enter article topic">
+    <button id="submit" class="btn btn-success">Submit</button>
+    </form>
+
+    <span id="warning">Waiting time 1 minute </span>
+
+    <br />
+    <br />
+
+    <span id="market-rate">Function is not available</span>
+
+    </section>
+
+    <section class="result">
+
+    <br />
+    <br />
+
+    <table  class="table table-success table-striped table-bordered">
+        <tr>
+           <th>Title</th>
+           <th>Story</th>
+           <th>Technic</th>
+           <th>Fiction</th>
+        </tr>
+<style>
+  #article-idea {
+    font-family: 'Pacifico', cursive;
+    font-weight: 700;
+    line-height: 1.8;
+  }
+</style>
+        <tbody id="article-idea"></tbody>
+    </table>
+
+    </section>
+<main>
+    <footer class="footer">
+        <style>
+            footer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: end;
+            height: 20vh;
+            margin: 5vh;
+
+        }
+            #fetch-permission {
+            font-size: 2em;
+            background-color: #b7ff00;
+            color: #070707;
+            padding: 10px;
+            border-radius: 25px;
+        }
+
+            #article-permission {
+            font-size: 2em;
+            background-color: #b7ff00;
+            color: #070707;
+            padding: 10px;
+            border-radius: 25px;        }
+
+            #fetch-rate + #fetch-rate_info {
+            margin-top: 5cm;
+            margin: 3cm;
+
+        }
+    </style>
+
+         <span id="fetch-permission">For Fetch Key:
+             <a href="https://www.alphavantage.co/">https://www.alphavantage.co/</a></span>
+         <span id="article-permission">For Article Key:
+             <a href="https://platform.openai.com/docs/overview">https://platform.openai.com/docs/overview</a></span>
+
+    </footer>
+<script ID="data-script" type="text/javascript" charset="utf-8">
+    $(document).ready(function () {
+      $("#fetch-rate").click(function () {
+        $.ajax({
+          url: "http://localhost:8000/fetch-market",
+          type: "GET",
+          success: function (data) {
+            $("#fetch-rate_info").css("background-color", "green");
+            $("#fetch-rate_info").text(data.rate);
+
+          },
+          error: function (jqdata, status, error) {
+            console.log(error);
+            alert("Not MARKET data... Can't connect to the API");
+          },
+        });
+      });
+        $("#article-input-form").submit(function (e) {
+      e.preventDefault();
+      const topic = $("#article-topic").val();
+      if (!topic.trim()) {
+        alert("Input the topic of the article.");
+        $("#market-rate").show();
+        return;
+      }
+      $("#market-rate").hide();
+
+      $.ajax({
+        url: "http://localhost:8000/article_idea",
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({ topic: topic }),
+        success: function (data) {
+          if (data && data.idea && data.technical_guide && data.fiction) {
+            const newItem = `
+              <tr>
+                <td>${topic}</td>
+                <td>${data.idea}</td>
+                <td>${data.technical_guide}</td>
+                <td>${data.fiction}</td>
+              </tr>`;
+            $("#article-idea").append(newItem);
+            $("#article-topic").val("");
+          } else {
+            alert("Server returned unexpected data.");
+          }
+        },
+        error: function (jqXHR, status, error) {
+          console.error(status, error);
+          alert("Error when sending data to the server.");
+        },
+      });
+    });
+  });
+</script>
+</main>
+</body>
+</html>

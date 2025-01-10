@@ -41,15 +41,13 @@ def main():
         while True:
             if order_details := input("Enter order details: "):
                 try:
-                    # Разбираем входные данные.
                     data = order_details.split(" ")
                     order_name, delay = data[0], int(data[1])
 
-                    # Добавляем заказ с вычисленным временем выполнения.
                     scheduler.add_order(
                         (
-                            order_name,  # Строка с именем заказа.
-                            datetime.now() + timedelta(seconds=delay),  # Время выполнения.
+                            order_name,
+                            datetime.now() + timedelta(seconds=delay),
                         )
                     )
                 except (ValueError, IndexError):

@@ -71,7 +71,7 @@ class DeliveryService(abc.ABC):
         print(f"DELIVERY PROCESSING...")
 
         while True:
-            with storage_lock:
+            # with storage_lock:
                 delivery_items = STORAGE["delivery"]
 
                 if not delivery_items:
@@ -92,7 +92,7 @@ class DeliveryService(abc.ABC):
         print(f"ARCHIVE CLEANER STARTED...")
 
         while True:
-            with storage_lock:
+            # with storage_lock:
                 delivery_items = STORAGE["delivery"]
                 now = datetime.now()
                 orders_to_archive = set()
